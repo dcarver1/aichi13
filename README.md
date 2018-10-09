@@ -1,3 +1,7 @@
+# dan's notes 
+I'm working on this outside of the publically maintained repo for the time being. Ideally once I get the hang of it I'll try to push it back. It'll be a bit. 
+
+
 # An indicator of the conservation status of useful wild plants
 
 Project Management and method code for "Comprehensiveness of conservation of useful wild plants: an operational indicator for biodiversity and sustainable development targets"
