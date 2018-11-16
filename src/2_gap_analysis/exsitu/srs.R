@@ -12,7 +12,7 @@ srs_exsitu <- function(species) {
   
   #load counts file
   counts <- read.csv(paste(sp_dir,"/counts.csv",sep=""), sep="\t")
-  
+  counts
   #calculate SRS
   if (counts$totalHRecords == 0) {
     srs <- 0

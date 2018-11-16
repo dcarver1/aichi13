@@ -7,6 +7,9 @@ suppressMessages(library(ff))
 suppressMessages(library(data.table))
 suppressMessages(library(gtools))
 #suppressMessages(library(velox))
+# k = 1
+# pnts= pnts
+# tmpl_raster = biolayers_cropc[[1]]
 
 make.projections <- function(k, pnts, tmpl_raster)
 {

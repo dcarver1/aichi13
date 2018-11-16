@@ -1,4 +1,4 @@
-#María Victoria Díaz
+#Mar?a Victoria D?az
 #CIAT,2018
 
 ################################### REGIONS TO MAP ############################
@@ -19,11 +19,11 @@
 #Load the packages
 require(raster);require(countrycode);require(maptools);require(rgdal)
 
-base_dir = "//dapadfs"
-repo_dir = "//dapadfs/Workspace_cluster_9/Aichi13/runs/src"
+#base_dir = "//dapadfs"
+#repo_dir = "//dapadfs/Workspace_cluster_9/Aichi13/runs/src"
 
 # Load the sources script
-source(paste0(repo_dir,"/config.R"))
+#source(paste0(repo_dir,"/config.R"))
 
 #Load world shapefile
 config(dirs=T)

@@ -49,7 +49,7 @@
 #                       It has three columns, the first has the species code; the second has the status
 #                       of process, if value is "TRUE" the process finished correctly, if the result is FALSE
 #                       the process had a error; the third column has a description about the process
-species="4182513"
+#species="4182513"
 calculate_grs = function(species, debug=F) {
   #required packages
   require(rgdal)
@@ -143,7 +143,7 @@ calculate_grs = function(species, debug=F) {
         species.area <- overlay.area <- NA
         
       }else{
-        proportion=proportion
+        proportion=v
       }
       
       

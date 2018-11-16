@@ -23,8 +23,16 @@ nat_area_mask <- function(species) {
   #velox RDS climate object
   x <- rst_vx
   
+
   #load counts
   sp_counts <- read.csv(paste(gap_dir,"/",species,"/counts.csv",sep=""),sep="\t")
+  ####
+  # DC 
+  # there is errors with that data structure.
+  # the first if statement is just checking to see if there are values with lat long. I produce a dataset that has 
+  # the total number of features that have late log
+  #change from !=0 to > 0 
+  #####
   
   #run only if there are records with coordinates
   if (sp_counts$totalUseful != 0) {

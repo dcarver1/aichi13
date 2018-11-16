@@ -19,7 +19,7 @@
 
 require(raster);require(countrycode);require(maptools);require(rgdal)
 
-base_dir = "//dapadfs"
+#base_dir = "//dapadfs"
 config(dirs=T)
 #load(file=paste0(par_dir, "/gadm/shapefile/gadm28ISO.RDS"))
 #config(dirs=F, cleaning=T, insitu=T, exsitu=T, modeling=T, premodeling=T)

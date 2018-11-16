@@ -15,11 +15,11 @@
 
 ####################### START ########################################
 
-base_dir = "//dapadfs"
-repo_dir = "//dapadfs/Workspace_cluster_9/Aichi13/runs/src"
+#base_dir = "//dapadfs"
+#repo_dir = "//dapadfs/Workspace_cluster_9/Aichi13/runs/src"
 
 # Load the sources script
-source(paste0(repo_dir,"/config.R"))
+#source(paste0(repo_dir,"/config.R"))
 config(dirs = T)
 ind_dir<-paste0(root,"/","indicator")
 

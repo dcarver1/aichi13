@@ -44,6 +44,7 @@ config(dirs=F, cleaning=T, insitu=T, exsitu=T, modeling=T, premodeling=T)
 
 ##########################################  Start Set Parameters  ###############################################
 
+### WHAT IS ROOT?
 setwd(root)
 
 server.number = "1"

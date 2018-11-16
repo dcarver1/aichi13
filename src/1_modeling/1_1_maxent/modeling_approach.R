@@ -33,6 +33,9 @@ source(paste(repo_dir,"/config.R",sep=""))
 #spModeling(species)
 #base_dir="//dapadfs"
 
+# 
+species <- species1
+
 spModeling <- function(species){
   # run config function
   config(dirs=T,modeling=T)
@@ -50,6 +53,10 @@ spModeling <- function(species){
     
     #load occurrence points
     xy_data <- read.csv(paste(occ_dir,"/no_sea/",species,".csv",sep=""),header=T)
+    
+    ###
+    # ok lots of weirdness here. Not sure what this dataframe is expected to look like coming in. 
+    # good questions for down south
    
     # Run alternatives #paste(sp_dir,"/bioclim/narea_mask.tif",sep="")
     if(!file.exists(paste0(gap_dir, "/", species, "/", run_version, "/modeling/alternatives/ca50_total_narea.tif"))){
@@ -64,10 +71,12 @@ spModeling <- function(species){
     
     # Output folder
     crossValDir <- paste0(gap_dir, "/", species, "/", run_version, "/modeling/maxent")
-    xy_data$type<-as.numeric(as.character(xy_data$type))
+    ### I dont think we need to do this step.
+    ### why is type referencing year? 
+    # xy_data$type<-as.numeric(as.character(xy_data$type))
     xy_data_na<-subset(xy_data, is.na(xy_data$type))
-    xy_data<-subset(xy_data, xy_data$type>=1950)
-    xy_data<-rbind(xy_data, xy_data_na)
+    # xy_data<-subset(xy_data, xy_data$type>=1950)
+    # xy_data<-rbind(xy_data, xy_data_na)
     xy_data<-xy_data[,c("lon","lat")]
     rm(xy_data_na)
     
@@ -86,52 +95,132 @@ spModeling <- function(species){
         rst_fls <- rst_fls[grep(pattern = "*.tif$", x = rst_fls)]
         rst_fls <- raster::stack(rst_fls)
         
+        
         # Determine background points
         cat("Creating background for: ", species, "\n")
-        # msk <- raster("//dapadfs/Workspace_cluster_9/Aichi13/parameters/world_mask/raster/mask.tif") PLEASE REVIEW
-        msk <- msk_global
-        msk_pts <- raster::rasterToPoints(msk)
-        msk_pts <- as.data.frame(msk_pts)
-        msk_pts <- msk_pts[which(msk_pts$y > -60),]
-        msk_pts$mask <- NULL
-        names(msk_pts) <- c("lon", "lat")
-        msk_pts <- msk_pts[complete.cases(msk_pts),]
-        msk_pts$cellID <- cellFromXY(object = msk, xy = msk_pts[,c("lon", "lat")])
-        #occ_cellID <- cellFromXY(object = msk, xy = optPars@occ.pts[,c("LON","LAT")])
-        occ_cellID <- cellFromXY(object = msk, xy = xy_data[,c("lon","lat")])
-        #msk_pts <- msk_pts[setdiff(msk_pts$cellID, occ_cellID),]; rm(occ_cellID)
-        msk_pts <- msk_pts[which(!msk_pts$cellID %in% occ_cellID),]
-        rownames(msk_pts) <- 1:nrow(msk_pts); rm(msk)
         
-        if(nrow(xy_data) >= 50){
-          set.seed(1234)
-          smpl <- base::sample(rownames(msk_pts), nrow(xy_data)*10, replace = F)
-          bck_data <- msk_pts[na.omit(match(smpl, rownames(msk_pts))),]; rm(smpl)
-        } else {
-          set.seed(1234)
-          smpl <- base::sample(rownames(msk_pts), nrow(xy_data)*100, replace = F)
-          bck_data <- msk_pts[na.omit(match(smpl, rownames(msk_pts))),]; rm(smpl)
+        
+        #msk <- raster("//dapadfs/Workspace_cluster_9/Aichi13/parameters/world_mask/raster/mask.tif") #PLEASE REVIEW
+        # msk <- msk_global
+        # msk_pts <- raster::rasterToPoints(msk)
+        # msk_pts <- as.data.frame(msk_pts)
+        # msk_pts <- msk_pts[which(msk_pts$y > -60),]
+        # msk_pts$mask <- NULL
+        # names(msk_pts) <- c("lon", "lat")
+        # msk_pts <- msk_pts[complete.cases(msk_pts),]
+        # msk_pts$cellID <- cellFromXY(object = msk, xy = msk_pts[,c("lon", "lat")])
+        # #occ_cellID <- cellFromXY(object = msk, xy = optPars@occ.pts[,c("LON","LAT")])
+        # occ_cellID <- cellFromXY(object = msk, xy = xy_data[,c("lon","lat")])
+        # #msk_pts <- msk_pts[setdiff(msk_pts$cellID, occ_cellID),]; rm(occ_cellID)
+        # msk_pts <- msk_pts[which(!msk_pts$cellID %in% occ_cellID),]
+        # rownames(msk_pts) <- 1:nrow(msk_pts); rm(msk)
+        # 
+        # if(nrow(xy_data) >= 50){
+        #   set.seed(1234)
+        #   smpl <- base::sample(rownames(msk_pts), nrow(xy_data)*10, replace = F)
+        #   bck_data <- msk_pts[na.omit(match(smpl, rownames(msk_pts))),]; rm(smpl)
+        # } else {
+        #   set.seed(1234)
+        #   smpl <- base::sample(rownames(msk_pts), nrow(xy_data)*100, replace = F)
+        #   bck_data <- msk_pts[na.omit(match(smpl, rownames(msk_pts))),]; rm(smpl)
+        # }
+        # bck_data$cellID <- NULL
+        # bck_data$species <- species
+        # 
+        
+        ### DC 
+        # attempt to translate the native area shp to raster, Took two hours for the US and Mexico. Not a viable option 
+        # Sys.time()
+        # natRast <- rasterize(natArea, rst_fls@layers[1][[1]])
+        # 
+        ## DC replacing the back ground point generation with new method that accounts for native area 
+        numberBackground <- function(area){
+          n <- gArea(area)*58
+          if( n >= 5000){
+            n <- 5000}else{
+              n <- n
+            }
+          return(n)
         }
-        bck_data$cellID <- NULL
-        bck_data$species <- species
+        natArea <- readOGR(paste0(gap_dir, '/',species,'/',run_version,  "/bioclim/narea.shp"))
+        print("natArea")
+        n <- numberBackground(natArea)
+        bck_data <- spsample(natArea, n = n, type = "random" )
+        print('background points')
         
+        # create the point buffer
+        # 1. buffer values from known presece locations by 0.000556 
+        presBuff <- gBuffer(sp::SpatialPoints(xy_data[,c("lon", "lat")]), width=0.05) #width=0.000556
+        crs(presBuff) <- crs(bck_data)
+        # convert to spatial dataframe 
+      
+        # 2. run an intersect between buffer and background point
+        intersect <- data.frame(over(bck_data, presBuff))
+        
+        # 3. extract all values to background points 
         #extract bio variables to check that no NAs are present
-        bck_data_bio <- cbind(bck_data, rst_vx$extract_points(sp = sp::SpatialPoints(bck_data[,c("lon", "lat")])))
-        bck_data_bio <- bck_data_bio[complete.cases(bck_data_bio),]
-        bck_data <- bck_data_bio[,c("lon","lat","species")]
+        bck_data_bio <- cbind(bck_data@coords, rst_vx$extract_points(bck_data))
         
+        ###DC Might need to come back to this but I'm going to leave this step out for now. Probably just do it later
+        #bck_data_bio <- bck_data_bio[complete.cases(bck_data_bio),]
+        
+        # #bck_data <- bck_data_bio[,c("lon","lat","species")]
+         
+         
+
         #do the same for presences
         xy_data_bio <- cbind(xy_data, rst_vx$extract_points(sp = sp::SpatialPoints(xy_data[,c("lon", "lat")])))
         xy_data_bio <- xy_data_bio[complete.cases(xy_data_bio),]
         xy_data <- xy_data_bio[,c("lon","lat")]
+        print('bio done')
+        #match names 
+        colnames(bck_data_bio) <- names(xy_data_bio)
+        bck_data_bio <- data.frame(bck_data_bio)
         
+        # 4. subsut background base on if they intersected know presence or not 
+        # join intersect values back to 
+        bck_data_bio$intersect <- intersect$over.bck_data..presBuff.
+        bg1 <- bck_data_bio[is.na(bck_data_bio$intersect), ]
+        bg2 <- bck_data_bio[!is.na(bck_data_bio$intersect),]
+        
+        
+        # 5. for those that did. Preform an anti join against presence values       
+        library(dplyr)
+        before <- nrow(bg2)
+        bck_data_bio <- anit_join(bg2, xy_data_bio)
+        after <- nrow(bck_data_bio)
+        
+        #print(paste0("there were", before - after, " background data points that were the same as the present "))
+        
+        # 6. join remaining values back to the non intersecting background points to use as bg dataset 
+        #bck_data_bio <- rbind(bck_data_bio,bg1 )
+        
+        ####DC 
+        #Steps to impliment 
+        # 1. buffer values from known presece locations by 0.000556 
+        # 2. run an intersect between buffer and background points 
+        # 3. extract all values to background points 
+        # 4. subsut background base on if they intersected know presence or not 
+        # 5. for those that did. Preform an anti join against presence values 
+        # 6. join remaining values back to the non intersecting background points to use as bg dataset 
+        
+        
+        
+        # filter to remove point with the same lat long. 
+        # library(dplyr)
+        # before <- nrow(bck_data_bio)
+        # bck_data_bio <- anit_join(bck_data_bio, xy_data_bio)
+        # after <- nrow(bck_data_bio)
+        # 
+        # print(paste0("there were", before - after, " background data points that were the same as the present "))
+        # 
         #put together both datasets
-        bck_data_bio$species <- NULL
+        #bck_data_bio$species <- NULL
         xy_mxe <- rbind(bck_data_bio, xy_data_bio)
         xy_mxe <- xy_mxe[,c(3:ncol(xy_mxe))]
         names(xy_mxe) <- names(rst_fls)
         row.names(xy_mxe) <- 1:nrow(xy_mxe)
-        
+        print("one data")
         # ---------------- #
         # Modeling
         # ---------------- #
@@ -172,6 +261,7 @@ spModeling <- function(species){
         # ---------------- #
         
         # Extract climate data for projecting
+        names(biolayers_cropc) <-names(xy_mxe)
         pnts <- rasterToPoints(x = biolayers_cropc)
         pnts <- as.data.frame(pnts)
         pnts$cellID <- cellFromXY(object = biolayers_cropc[[1]], xy = pnts[,1:2])
@@ -191,7 +281,7 @@ spModeling <- function(species){
         results <- list(model = fit,
                         projections = pred,
                         occ_predictions = raster::extract(x = pred, y = xy_data[,c("lon","lat")]),
-                        bck_predictions = raster::extract(x = pred, y = bck_data[,c("lon","lat")]))
+                        bck_predictions = raster::extract(x = pred, y = bck_data@coords))
         
         cat("Saving RDS File with Models outcomes for: ", species, "\n")
         saveRDS(object = results, file = paste0(crossValDir, "/modeling_results.", species, ".RDS"))
