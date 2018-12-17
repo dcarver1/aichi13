@@ -12,19 +12,19 @@ library(rmarkdown)
 
 
 # this is a function that will pull in output tif from different folders and generate a set of maps with evaluation statistics 
-base_dr <-"C:/Users/Daniel.Carver/Documents/newH/cucurbita/ModelResults/resultsCucubita20181114/gap_analysis"
+base_dr <-"C:/Users/danie/Desktop/aichiTest/aichiTest/gap_analysis"
 
 
 
 species <- list.dirs(path = base_dr,full.names = FALSE, recursive = FALSE)
-
+species2 <- species[13:16]
 # for each type of car in the data create a report
 # these reports are saved in output_dir with the name specified by output_file
-for (taxa in species){
+for (taxa in species2){
   runtype <- list.dirs(path = paste0(base_dr,"/", taxa),full.names = FALSE, recursive = FALSE)
-  rmarkdown::render("C:/Users/Daniel.Carver/Documents/newH/cucurbita/Aichi_data_Dan/summaryRunResults.rmd",  # file 2
+  rmarkdown::render("C:/Users/danie/Desktop/aichi13/extrasDC/summaryRunResults.rmd",  # file 2
                     output_file =  paste("report_", taxa, '_a' , Sys.Date(), ".html", sep=''), 
-                    output_dir = paste0(base_dr, "/summaryResultsCucurbita11_16"))
+                    output_dir = paste0(base_dr, "/summaryResultsCucurbita12_06"))
   # for (run in runtype){
   #   print(paste0(taxa,"on this ", run))
   #   baseDir <- paste0(base_dr, '/', taxa,'/',run)

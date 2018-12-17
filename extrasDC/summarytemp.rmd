@@ -22,7 +22,6 @@ library(rmarkdown)
 library("tmap")
 library("raster")
 library("DT")
-# taxa <- "Cucurbita_cordata"
 
 ```
 
@@ -38,6 +37,9 @@ include <- function (theList, toMatch){
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # taxa is the 
 ###DC
+base_dr <- "C:/Users/danie/Desktop/aichiTest/aichiTest/gap_analysis"
+taxa <- "Cucurbita_pepo_subsp._ovifera_var._ozarkana"
+
 baseDir <- paste0(base_dr, '/', taxa)
 csv <- list.files(baseDir, pattern = ".csv", recursive = TRUE , full.names = TRUE)
 ```
@@ -52,9 +54,9 @@ dfSum <- data.frame()
 runs <- list.dirs(baseDir,recursive = FALSE , full.names = FALSE)
 metrics <- include(csv, "eval_metrics.csv")
 for(i in 1:length(runs)){
-  value <- grepl(runs[i], metrics, fixed = TRUE)
+  value <- grepl(runs[i], metrics[i], fixed = TRUE)
   if(any(value)){
-  dt1 <- read.csv(metrics[value])
+  dt1 <- read.csv(metrics[i])
   dt1$run <- runs[i]
   dfSum <- rbind(dfSum, dt1)
   }else{
@@ -88,7 +90,7 @@ if(length(thres) > 0 ){
     rast2 <- grepl(runs[i], metrics, fixed = TRUE)
     if(any(rast2))
       {
-      ras <- raster(thres[rast2])
+      ras <- raster(thres[i])
       ras[is.na(ras[])] <- 0 
       ras <- extend(ras, extent(ras1), value = 0)
       ras1 <- ras1 + ras
@@ -131,25 +133,24 @@ for(class in rasters){
   ecoRast <- rasters[eco][[1]]
 }
 
-for(class in rasters){
-  ecoV <- grepl("ecoV", metrics, fixed = TRUE)
-  ecoRast1 <- rasters[ecoV][[1]]
-}
+# for(class in rasters){
+#   ecoV <- grepl("ecoV", metrics, fixed = TRUE)
+#   ecoRast1 <- rasters[ecoV][[1]]
+# }
 
 
 bio1 <- bioRast
 eco1 <- ecoRast
-ecoV <- ecoRast1
+# ecoV <- ecoRast1
 
 ecoFull <- extend(eco1, extent(bio1), value = 0)
-ecoFullv <- extend(ecoV, extent(bio1), value = 0)
+# ecoFullv <- extend(ecoV, extent(bio1), value = 0)
 
 eco1[is.na(eco1[])] <- 0 
 bio1[is.na(bio1[])] <- 0 
-ecoV[is.na(ecoV[])] <- 0 
-ecoBio <- ecoFull + bioRast + ecoFullv
-
-
+# ecoV[is.na(ecoV[])] <- 0 
+# ecoBio <- ecoFull + bioRast + ecoFullv
+ecoBio <- ecoFull + bio1
 if(class(ecoBio) == "RasterLayer"){
   qtm(shp = ecoBio)
 }else{
@@ -157,39 +158,8 @@ if(class(ecoBio) == "RasterLayer"){
 }
 ```
 
-### Ecoregion Variable Selection 5 reps 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-for(class in rasters){
-  testr <- grepl("testR", metrics, fixed = TRUE)
-    if(any(testr)){
-    testr <- rasters[testr][[1]]
-  }else{
-  print("no rasters are present")
-  }
-}
 
 
-if(class(testr) == "RasterLayer"){
-  qtm(shp = testr)
-}else{
-  print("no rasters are present")
-}
-```
-
-
-
-
-
-### EcoRegion Variable Selection 10 reps 
-The map below is an example of the prediction map that is limited to ecoregions in which known presense locations are found. A varible selection process was perform before the model was ran. 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-if(class(ecoRast1) == "RasterLayer"){
-  qtm(shp = ecoRast1)
-}else{
-  print("no rasters are present")
-}
-
-```
 
 ### EcoRegion 
 The map below is an example of the prediction map that is limited to ecoregions in which known presense locations are found. 
@@ -214,48 +184,75 @@ if(class(bioRast) == "RasterLayer"){
 }
 ```
 
-### Country
 
-The map below is an example of the prediction map that is limited to the countries in which known presense locations are found. 
+
+### Ecoregion Nipals with VifStep Correlation test 
+Map for the principal component  and correlation removal variable selection proces. 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 for(class in rasters){
-  country <- grepl("count", metrics, fixed = TRUE)
-    if(any(country)){
-    country <- rasters[country][[1]]
+  testr <- grepl("nipalsvirStep", metrics, fixed = TRUE)
+    if(any(testr)){
+    testr <- rasters[testr][[1]]
   }else{
   print("no rasters are present")
   }
 }
 
 
-if(class(country) == "RasterLayer"){
-  qtm(shp = country)
+if(class(testr) == "RasterLayer"){
+  qtm(shp = testr)
 }else{
   print("no rasters are present")
 }
+
+
+
 ```
 
 
-### World 
-
-The map below is an example of the prediction map that is based on background points generated from around the world. The model is constained to the countries in which the species is native. 
-
+### Ecoregion rfUtilities with Correlation test 
+Map for the rfUtilities with the removal of correlated variables.  
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 for(class in rasters){
-  v1 <- grepl('v1', metrics, fixed = TRUE)
-  if(any(v1)){
-    v1 <- rasters[v1][[1]]
+  testr <- grepl("rfUtilities", metrics, fixed = TRUE)
+    if(any(testr)){
+    testr <- rasters[testr][[1]]
   }else{
   print("no rasters are present")
   }
 }
 
 
-
-
-if(class(v1) == "RasterLayer"){
-  qtm(shp = v1)
+if(class(testr) == "RasterLayer"){
+  qtm(shp = testr)
 }else{
   print("no rasters are present")
 }
+
+
 ```
+
+
+### Ecoregion Vsurf threshold with Correlation test 
+Map for the vsurf threshold selection with correlation test selection proces. 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+for(class in rasters){
+  testr <- grepl("vsurfThres", metrics, fixed = TRUE)
+    if(any(testr)){
+    testr <- rasters[testr][[1]]
+  }else{
+  print("no rasters are present")
+  }
+}
+
+
+if(class(testr) == "RasterLayer"){
+  qtm(shp = testr)
+}else{
+  print("no rasters are present")
+}
+
+
+
+```
+
